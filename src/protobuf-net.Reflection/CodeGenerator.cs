@@ -212,7 +212,9 @@ namespace ProtoBuf.Reflection
 
             foreach (var inner in file.Services)
             {
+                
                 WriteService(ctx, inner);
+                WriteMediatrDeclaration(ctx, inner);
             }
             if (file.Extensions.Count != 0)
             {
@@ -286,6 +288,17 @@ namespace ProtoBuf.Reflection
             }
         }
         /// <summary>
+        /// Emit code representing a service
+        /// </summary>
+        protected virtual void WriteMediatrDeclaration(GeneratorContext ctx, ServiceDescriptorProto service)
+        {
+            if (ctx.EmitMediatrDeclaration)
+            {
+                object state = null;
+                WriteMediatrDeclaration(ctx, service, ref state);
+            }
+        }
+        /// <summary>
         /// Emit code following a set of service methods
         /// </summary>
         protected virtual void WriteServiceFooter(GeneratorContext ctx, ServiceDescriptorProto service, ref object state) { }
@@ -298,6 +311,12 @@ namespace ProtoBuf.Reflection
         /// Emit code preceeding a set of service methods
         /// </summary>
         protected virtual void WriteServiceHeader(GeneratorContext ctx, ServiceDescriptorProto service, ref object state) { }
+
+        /// <summary>
+        /// Emit code preceeding a mediatr IRequest service method model
+        /// </summary>
+        protected virtual void WriteMediatrDeclaration(GeneratorContext ctx, ServiceDescriptorProto service, ref object state) { }
+
         /// <summary>
         /// Check whether a particular message should be suppressed - for example because it represents a map
         /// </summary>
@@ -597,6 +616,8 @@ namespace ProtoBuf.Reflection
 
                 EmitListSetters = IsEnabled("listset");
 
+                EmitMediatrDeclaration = IsEnabled("mediatr");
+
                 var s = GetCustomOption("services");
                 void AddServices(string value)
                 {
@@ -633,6 +654,11 @@ namespace ProtoBuf.Reflection
             /// Whether services should be emitted
             /// </summary>
             public bool EmitServices => _serviceKinds != ServiceKinds.None;
+
+            /// <summary>
+            /// Whether mediatR IRequest should be emitted
+            /// </summary>
+            public bool EmitMediatrDeclaration { get; }
 
 
             /// <summary>
